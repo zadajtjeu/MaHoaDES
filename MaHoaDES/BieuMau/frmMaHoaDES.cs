@@ -75,7 +75,7 @@ namespace MaHoaDES.BieuMau
                         GiaiDoan = 2;
                         DocFileTxt.WriteBinaryToFile(txtFileDich.Text, KQ);
                         GiaiDoan = 3;
-                        MessageBox.Show("Thành công", "Mã hóa file thành công!");
+                        MessageBox.Show("Mã hóa file thành công!", "Thành công");
                     }
                     else
                     {
@@ -85,14 +85,14 @@ namespace MaHoaDES.BieuMau
                         ChuoiNhiPhan KQ = MaHoaDES64.ThucHienDES(Khoa, chuoi, -1);
                         if (KQ == null)
                         {
-                            MessageBox.Show("Lỗi", "Lỗi giải mã . kiểm tra khóa!");
+                            MessageBox.Show("Lỗi giải mã . kiểm tra khóa!", "Lỗi");
                             timer1.Enabled = false;
                             return;
                         }
                         GiaiDoan = 2;
                         DocFileTxt.WriteBinaryToFile(txtFileDich.Text, KQ);
                         GiaiDoan = 3;
-                        MessageBox.Show("Thành công", "Giải mã file thành công!");
+                        MessageBox.Show("Giải mã file thành công!", "Thành công");
                     }
                 }
                 else
@@ -108,7 +108,7 @@ namespace MaHoaDES.BieuMau
                         txtVanBanDich.Text = kq;
                         GiaiDoan = 2;
                         GiaiDoan = 3;
-                        MessageBox.Show("Thành công", "Mã hóa chuỗi thành công!");
+                        MessageBox.Show("Mã hóa chuỗi thành công!", "Thành công");
                     }
                     else
                     {
@@ -123,7 +123,7 @@ namespace MaHoaDES.BieuMau
                         }
                         GiaiDoan = 2;
                         GiaiDoan = 3;
-                        MessageBox.Show("Thành công", "Giải mã chuỗi thành công!");
+                        MessageBox.Show("Giải mã chuỗi thành công!", "Thành công");
                     }
                 }
                 //if (!ckbCheDoDebug.Checked)
@@ -261,13 +261,19 @@ namespace MaHoaDES.BieuMau
         private void btnChiaKhoa_Click(object sender, EventArgs e)
         {
             bool check = true;
-
+            BigInteger checkP;
             if (String.IsNullOrEmpty(txtKChia.Text) || String.IsNullOrEmpty(txtPChia.Text)
                 || String.IsNullOrEmpty(txtGTV1.Text) || String.IsNullOrEmpty(txtGTV2.Text)
                 || String.IsNullOrEmpty(txtGTA1.Text))
             {
                 check = false;
-                MessageBox.Show("Lỗi", "Vui lòng nhập đầy đủ thông tin để chia khóa!");
+                MessageBox.Show("Vui lòng nhập lòng nhập đầy đủ thông tin để chia khóa!", "Lỗi");
+            }
+
+            else if (BigInteger.TryParse(txtPChia.Text, out checkP) == false || !IsPrime(checkP))
+            {
+                check = false;
+                MessageBox.Show("Vui lòng nhập p phải là một số nguyên tố!", "Lỗi");
             }
 
             if (check)
@@ -303,13 +309,19 @@ namespace MaHoaDES.BieuMau
         private void btnGhepKhoa_Click(object sender, EventArgs e)
         {
             bool check = true;
-
+            BigInteger checkP;
             if (String.IsNullOrEmpty(txtPGhep.Text) || String.IsNullOrEmpty(txtV1.Text)
                 || String.IsNullOrEmpty(txtV2.Text) || String.IsNullOrEmpty(txtFv1.Text)
                 || String.IsNullOrEmpty(txtFv2.Text))
             {
                 check = false;
-                MessageBox.Show("Lỗi", "Vui lòng nhập đầy đủ thông tin để ghép khóa!");
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin để ghép khóa!", "Lỗi");
+            }
+
+            else if (BigInteger.TryParse(txtPGhep.Text, out checkP) == false || !IsPrime(checkP))
+            {
+                check = false;
+                MessageBox.Show("Vui lòng nhập p phải là một số nguyên tố!", "Lỗi");
             }
 
             if (check)
@@ -361,6 +373,58 @@ namespace MaHoaDES.BieuMau
             }
             if (x1 < 0) x1 += b0;
             return x1;
+        }
+        // Miller rabbin
+        public static bool IsPrime(BigInteger n)
+        {
+            if (n < 2)
+                return false;
+            if (n == 2 || n == 3 || n == 5 || n == 7)
+                return true;
+            if (n % 2 == 0)
+                return false;
+
+            BigInteger bn = n; // converting to BigInteger here to avoid converting up to 48 times below
+            BigInteger n1 = bn - 1;
+            int r = 1;
+            BigInteger d = n1;
+            while (d.IsEven)
+            {
+                r++;
+                d >>= 1;
+            }
+            if (!Witness(2, r, d, bn, n1)) return false;
+            if (!Witness(3, r, d, bn, n1)) return false;
+            if (!Witness(5, r, d, bn, n1)) return false;
+            if (!Witness(7, r, d, bn, n1)) return false;
+            if (!Witness(11, r, d, bn, n1)) return false;
+            if (n < 2152302898747) return true;
+            if (!Witness(13, r, d, bn, n1)) return false;
+            if (n < 3474749660383) return true;
+            if (!Witness(17, r, d, bn, n1)) return false;
+            if (n < 341550071728321) return true;
+            if (!Witness(19, r, d, bn, n1)) return false;
+            if (!Witness(23, r, d, bn, n1)) return false;
+            if (n < 3825123056546413051) return true;
+            return Witness(29, r, d, bn, n1)
+                   && Witness(31, r, d, bn, n1)
+                   && Witness(37, r, d, bn, n1);
+        }
+
+        // a single instance of the Miller-Rabin Witness loop
+        private static bool Witness(BigInteger a, int r, BigInteger d, BigInteger n, BigInteger n1)
+        {
+            var x = BigInteger.ModPow(a, d, n);
+            if (x == BigInteger.One || x == n1) return true;
+
+            while (r > 1)
+            {
+                x = BigInteger.ModPow(x, 2, n);
+                if (x == BigInteger.One) return false;
+                if (x == n1) return true;
+                r--;
+            }
+            return false;
         }
 
     }
