@@ -10,6 +10,7 @@ using MaHoaDES.DoiTuong;
 using AOC.ThuVien;
  
 using System.Threading;
+using System.Numerics;
 
 namespace MaHoaDES.BieuMau
 {
@@ -74,7 +75,7 @@ namespace MaHoaDES.BieuMau
                         GiaiDoan = 2;
                         DocFileTxt.WriteBinaryToFile(txtFileDich.Text, KQ);
                         GiaiDoan = 3;
-                        MessageBox.Show("Mã hóa file thành công");
+                        MessageBox.Show("Thành công", "Mã hóa file thành công!");
                     }
                     else
                     {
@@ -84,13 +85,14 @@ namespace MaHoaDES.BieuMau
                         ChuoiNhiPhan KQ = MaHoaDES64.ThucHienDES(Khoa, chuoi, -1);
                         if (KQ == null)
                         {
-                            MessageBox.Show("Lỗi giải mã . kiểm tra khóa ");
+                            MessageBox.Show("Lỗi", "Lỗi giải mã . kiểm tra khóa!");
+                            timer1.Enabled = false;
                             return;
                         }
                         GiaiDoan = 2;
                         DocFileTxt.WriteBinaryToFile(txtFileDich.Text, KQ);
                         GiaiDoan = 3;
-                        MessageBox.Show("Giải mã file thành công");
+                        MessageBox.Show("Thành công", "Giải mã file thành công!");
                     }
                 }
                 else
@@ -106,7 +108,7 @@ namespace MaHoaDES.BieuMau
                         txtVanBanDich.Text = kq;
                         GiaiDoan = 2;
                         GiaiDoan = 3;
-                        MessageBox.Show("Mã hóa chuỗi thành công");
+                        MessageBox.Show("Thành công", "Mã hóa chuỗi thành công!");
                     }
                     else
                     {
@@ -121,21 +123,21 @@ namespace MaHoaDES.BieuMau
                         }
                         GiaiDoan = 2;
                         GiaiDoan = 3;
-                        MessageBox.Show("Giải mã chuỗi thành công");
+                        MessageBox.Show("Thành công", "Giải mã chuỗi thành công!");
                     }
                 }
                 //if (!ckbCheDoDebug.Checked)
                 //{
                     //EnableHoacDisableNut(true);
                     timer1.Enabled = false;
-                //}
+            //}
             //}
             //catch (Exception ex)
             //{
 
             //    MessageBox.Show(ex.ToString()); 
             //}
-            
+
         }
 
         private void txtMaHoaVanBan_Click(object sender, EventArgs e)
@@ -143,9 +145,8 @@ namespace MaHoaDES.BieuMau
             FileHayChuoi = false;
             MaHoaHayGiaiMa = 1;
             ClearProgressBar();
-            EnableHoacDisableNut(false);
             MaHoa();
-            EnableHoacDisableNut(true);
+            //EnableHoacDisableNut(true);
         }
 
         private void txtGiaiMaVanBan_Click(object sender, EventArgs e)
@@ -154,7 +155,6 @@ namespace MaHoaDES.BieuMau
             FileHayChuoi = false;
             MaHoaHayGiaiMa = -1;
             ClearProgressBar();
-            EnableHoacDisableNut(false);
             MaHoa();
             EnableHoacDisableNut(true);
         }
@@ -164,7 +164,6 @@ namespace MaHoaDES.BieuMau
             FileHayChuoi = true;
             MaHoaHayGiaiMa = 1;
             ClearProgressBar();
-            EnableHoacDisableNut(false);
             Chay();
             EnableHoacDisableNut(true);
         }
@@ -174,7 +173,6 @@ namespace MaHoaDES.BieuMau
             FileHayChuoi = true;
             MaHoaHayGiaiMa = -1;
             ClearProgressBar();
-            EnableHoacDisableNut(false);
             Chay();
             EnableHoacDisableNut(true);
         }
@@ -252,6 +250,7 @@ namespace MaHoaDES.BieuMau
         private void ClearProgressBar()
         {
             progressBar1.Value = 0;
+            EnableHoacDisableNut(false);
         }
 
 
@@ -261,83 +260,102 @@ namespace MaHoaDES.BieuMau
 
         private void btnChiaKhoa_Click(object sender, EventArgs e)
         {
-            string kq = "Các cặp khóa: \n";
-            decimal Key = decimal.Parse(txtKChia.Text);
-            decimal P = decimal.Parse(txtPChia.Text);
+            bool check = true;
 
-            int m = 3, t = 3;
-
-            decimal[] v = {0,decimal.Parse(txtGTV1.Text),
-                            decimal.Parse(txtGTV2.Text),
-                            decimal.Parse(txtGTV3.Text)};
-            decimal[] a = {0,decimal.Parse(txtGTA1.Text),
-                            decimal.Parse(txtGTA2.Text)};
-
-            for (int i = 1; i <= m; i++)
+            if (String.IsNullOrEmpty(txtKChia.Text) || String.IsNullOrEmpty(txtPChia.Text)
+                || String.IsNullOrEmpty(txtGTV1.Text) || String.IsNullOrEmpty(txtGTV2.Text)
+                || String.IsNullOrEmpty(txtGTA1.Text))
             {
-                decimal l = 0;
-                for (int j = t - 1; j > 0; j--)
-                {
-                    //vong for = pow(vi, j)
-                    decimal h = 1;
-                    for (int id = 1; id <= j; id++)
-                    {
-                        h = (h % P * v[i] % P) % P;
-                    }
-
-                    l = (l % P + (a[j] % P * h % P) % P) % P;
-                }
-                decimal y = (Key%P + l%P) % P;
-                kq += String.Format("(v{0}, f(v{1}) = ({2}, {3})\n", i, i, v[i], y);
+                check = false;
+                MessageBox.Show("Lỗi", "Vui lòng nhập đầy đủ thông tin để chia khóa!");
             }
-            kq += String.Format("Cần 2/3 cặp (vj, f(vj)) để khôi phục khóa\n");
-            richTextBoxChia.Text = kq;
+
+            if (check)
+            {
+                string kq = "Các cặp khóa: \n";
+                BigInteger Key = BigInteger.Parse(txtKChia.Text);
+                BigInteger P = BigInteger.Parse(txtPChia.Text);
+
+                int m = 2, t = 2;
+
+                BigInteger[] v = {0,BigInteger.Parse(txtGTV1.Text),
+                            BigInteger.Parse(txtGTV2.Text)};
+                BigInteger[] a = { 0, BigInteger.Parse(txtGTA1.Text) };
+
+                for (int i = 1; i <= m; i++)
+                {
+                    BigInteger l = 0;
+                    for (int j = t - 1; j > 0; j--)
+                    {
+                        //vong for = pow(vi, j)
+                        BigInteger h = BigInteger.Pow(v[i], j) % P;
+
+                        l = (l + (a[j] * h)) % P;
+                    }
+                    BigInteger y = (Key + l) % P;
+                    kq += String.Format("(v{0}, f(v{1}) = ({2}, {3})\n", i, i, v[i], y);
+                }
+                kq += String.Format("Cần 2/3 cặp (vj, f(vj)) để khôi phục khóa\n");
+                richTextBoxChia.Text = kq; 
+            }
         }
 
         private void btnGhepKhoa_Click(object sender, EventArgs e)
         {
-            decimal p = decimal.Parse(txtPGhep.Text);
-            decimal[] v = {0,decimal.Parse(txtV1.Text),
-                            decimal.Parse(txtV2.Text),
-                            decimal.Parse(txtV3.Text)};
+            bool check = true;
 
-            decimal[] f = {0,decimal.Parse(txtFv1.Text),
-                            decimal.Parse(txtFv2.Text),
-                            decimal.Parse(txtFv3.Text)};
-            decimal k = 0;
+            if (String.IsNullOrEmpty(txtPGhep.Text) || String.IsNullOrEmpty(txtV1.Text)
+                || String.IsNullOrEmpty(txtV2.Text) || String.IsNullOrEmpty(txtFv1.Text)
+                || String.IsNullOrEmpty(txtFv2.Text))
+            {
+                check = false;
+                MessageBox.Show("Lỗi", "Vui lòng nhập đầy đủ thông tin để ghép khóa!");
+            }
+
+            if (check)
+            {
+                BigInteger p = BigInteger.Parse(txtPGhep.Text);
+                BigInteger[] v = {0,BigInteger.Parse(txtV1.Text),
+                            BigInteger.Parse(txtV2.Text)};
+
+                BigInteger[] f = {0,BigInteger.Parse(txtFv1.Text),
+                            BigInteger.Parse(txtFv2.Text)};
+                BigInteger k = 0;
 
                 txtKhoaKPHexa.Text = f[2].ToString();
-            int t = 3;
-            for (int i = 1; i <= t; i++)
-            {
-                decimal m = 1;
-                for (int j = 1; j <= t; j++)
+                int t = 2;
+                for (int i = 1; i <= t; i++)
                 {
-                    if (j != i)
+                    BigInteger m = 1;
+                    for (int j = 1; j <= t; j++)
                     {
-                        decimal b = v[j] - v[i];
-                        decimal n = mul_inv(b, p) % p;
-                        n = (v[j] % p * n % p) % p;
-                        m = (m % p * n % p) % p;
+                        if (j != i)
+                        {
+                            BigInteger b = v[j] - v[i];
+                            BigInteger n = mul_inv(b, p) % p;
+                            n = (v[j] * n) % p;
+                            m = (m * n) % p;
+                        }
                     }
+                    txtKhoaKPHexa.Text = m.ToString();
+                    k = (k % p + (f[i] % p * m % p) % p) % p;
                 }
-                k = (k%p + (f[i]%p * m%p) % p) % p;
+                txtKhoaKP.Text = k.ToString();
+                txtKhoaKPHexa.Text = k.ToString("X"); 
             }
-            txtKhoaKP.Text = k.ToString();
-            txtKhoaKPHexa.Text = Convert.ToString((long)k, 16).ToUpper();
         }
 
 
         // Các hàm gộp khóa 
-        private static decimal mul_inv(decimal a, decimal b) //a^-1 mod b
+        private static BigInteger mul_inv(BigInteger a, BigInteger b) //a^-1 mod b
         {
-            decimal b0 = b, t, q;
-            decimal x0 = 0, x1 = 1;
+            BigInteger b0 = b, t, q;
+            BigInteger x0 = 0, x1 = 1;
             if (b == 1) return 1;
             while (a < 0) a += b;
             while (a > 1)
             {
-                q = (ulong)(a / b);
+                q = (a / b);
                 t = b; b = a % b; a = t;
                 t = x0; x0 = x1 - q * x0; x1 = t;
             }
