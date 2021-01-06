@@ -146,7 +146,7 @@ namespace MaHoaDES.BieuMau
             MaHoaHayGiaiMa = 1;
             ClearProgressBar();
             MaHoa();
-            //EnableHoacDisableNut(true);
+            EnableHoacDisableNut(true);
         }
 
         private void txtGiaiMaVanBan_Click(object sender, EventArgs e)
@@ -288,14 +288,14 @@ namespace MaHoaDES.BieuMau
                     for (int j = t - 1; j > 0; j--)
                     {
                         //vong for = pow(vi, j)
-                        BigInteger h = BigInteger.Pow(v[i], j) % P;
+                        BigInteger h = BigInteger.ModPow(v[i], j, P);
 
                         l = (l + (a[j] * h)) % P;
                     }
                     BigInteger y = (Key + l) % P;
                     kq += String.Format("(v{0}, f(v{1}) = ({2}, {3})\n", i, i, v[i], y);
                 }
-                kq += String.Format("Cần 2/3 cặp (vj, f(vj)) để khôi phục khóa\n");
+                kq += String.Format("Cần 2/2 cặp (vj, f(vj)) để khôi phục khóa\n");
                 richTextBoxChia.Text = kq; 
             }
         }
